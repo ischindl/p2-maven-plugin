@@ -44,6 +44,7 @@ public class WrapRequest {
         this.bundle = bundleUtils.isBundle(inputFile);
         this.shouldWrap = shouldWrap();
         this.properties = new WrapRequestProperties(resolvedArtifact, p2artifact);
+        this.properties.calculateNames();
     }
 
     public boolean isShouldWrap() {

@@ -24,7 +24,6 @@ import org.reficio.p2.P2Artifact;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.reficio.p2.utils.WrapRequestProperties.calculateSourceName;
 
 /**
  * @author: Tom Bujok (tom.bujok@gmail.com)
@@ -38,17 +37,23 @@ public class WrapRequestPropertiesTest {
     public void testIOExceptionTranslation() {
         ResolvedArtifact resolvedArtifact = mock(ResolvedArtifact.class, Mockito.RETURNS_DEEP_STUBS);
         P2Artifact p2Artifact = mock(P2Artifact.class, Mockito.RETURNS_DEEP_STUBS);
-        new WrapRequestProperties(resolvedArtifact, p2Artifact);
+        WrapRequestProperties wrp = new WrapRequestProperties(resolvedArtifact, p2Artifact);
+        wrp.calculateNames();
     }
 
     @Test
     public void testCalculateSourceName() {
-        assertEquals("org.reficio.p2.source", calculateSourceName(null, "org.reficio.p2"));
-        assertEquals("org.reficio.P2.source", calculateSourceName(null, "org.reficio.P2"));
-        assertEquals("Reficio P2 Source", calculateSourceName("Reficio P2", "org.reficio.p2"));
-        assertEquals("reficio p2 source", calculateSourceName("reficio p2", "org.reficio.p2"));
-        assertEquals("org.reficio.P2.Source", calculateSourceName("org.reficio.P2", "org.reficio.p2"));
-        assertEquals("org.reficio.p2.source", calculateSourceName("org.reficio.p2", "org.reficio.p2"));
+        ResolvedArtifact resolvedArtifact = mock(ResolvedArtifact.class, Mockito.RETURNS_DEEP_STUBS);
+        P2Artifact p2Artifact = mock(P2Artifact.class, Mockito.RETURNS_DEEP_STUBS);
+        WrapRequestProperties wrp = new WrapRequestProperties(resolvedArtifact, p2Artifact);
+        assertEquals("org.reficio.p2.source", wrp.calculateSourceName(null, "org.reficio.p2"));
+        assertEquals("org.reficio.p2.source", wrp.calculateSourceName(null, "org.reficio.p2; singleton=true"));
+        assertEquals("org.reficio.P2.source", wrp.calculateSourceName(null, "org.reficio.P2"));
+        assertEquals("Reficio P2 Source", wrp.calculateSourceName("Reficio P2", "org.reficio.p2"));
+        assertEquals("reficio p2 source", wrp.calculateSourceName("reficio p2", "org.reficio.p2"));
+        assertEquals("org.reficio.P2.Source", wrp.calculateSourceName("org.reficio.P2", "org.reficio.p2"));
+        assertEquals("org.reficio.p2.source", wrp.calculateSourceName("org.reficio.p2", "org.reficio.p2"));
+        assertEquals("org.reficio.p2.source", wrp.calculateSourceName("org.reficio.p2", "org.reficio.p2; singleton=true"));
     }
 
 

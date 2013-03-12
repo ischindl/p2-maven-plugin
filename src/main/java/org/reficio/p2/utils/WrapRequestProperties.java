@@ -18,7 +18,6 @@
  */
 package org.reficio.p2.utils;
 
-
 import aQute.lib.osgi.Analyzer;
 import aQute.lib.osgi.Jar;
 import org.reficio.p2.P2Artifact;
@@ -27,117 +26,129 @@ import java.io.IOException;
 
 public class WrapRequestProperties {
 
-    private final String name;
-    private final String symbolicName;
-    private final String version;
+	private String name;
+	private String symbolicName;
+	private String version;
 
-    private final String sourceName;
-    private final String sourceSymbolicName;
-    private final String sourceVersion;
+	private String sourceName;
+	private String sourceSymbolicName;
+	private String sourceVersion;
 
-    private final BundleUtils bundleUtils = new BundleUtils();
-    private final ResolvedArtifact resolvedArtifact;
-    private final P2Artifact p2artifact;
+	private BundleUtils bundleUtils = new BundleUtils();
+	private ResolvedArtifact resolvedArtifact;
+	private P2Artifact p2artifact;
 
-    public WrapRequestProperties(ResolvedArtifact resolvedArtifact, P2Artifact p2artifact) {
-        this.resolvedArtifact = resolvedArtifact;
-        this.p2artifact = p2artifact;
-        try {
-            this.symbolicName = calculateSymbolicName();
-            this.name = calculateName(symbolicName);
-            this.version = calculateVersion();
+	public WrapRequestProperties(ResolvedArtifact resolvedArtifact, P2Artifact p2artifact) {
+		this.resolvedArtifact = resolvedArtifact;
+		this.p2artifact = p2artifact;
+	}
 
-            this.sourceSymbolicName = calculateSourceSymbolicName(symbolicName);
-            this.sourceName = calculateSourceName(name, symbolicName);
-            this.sourceVersion = calculateSourceVersion(version);
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
+	public void calculateNames() {
+		try {
+			this.symbolicName = calculateSymbolicName();
+			this.name = calculateName(symbolicName);
+			this.version = calculateVersion();
 
-    private String calculateName(String symbolicName) {
-        return symbolicName;
-    }
+			this.sourceSymbolicName = calculateSourceSymbolicName(symbolicName);
+			this.sourceName = calculateSourceName(name, symbolicName);
+			this.sourceVersion = calculateSourceVersion(version);
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
 
-    private String calculateSymbolicName() throws IOException {
-        String symbolicName = null;
-        if (resolvedArtifact.isRoot()) {
-            Object symbolicNameValue = p2artifact.getInstructions().get(Analyzer.BUNDLE_SYMBOLICNAME);
-            symbolicName = symbolicNameValue != null ? symbolicNameValue.toString() : null;
-        }
-        if (symbolicName == null) {
-            symbolicName = bundleUtils.getBundleSymbolicName(new Jar(resolvedArtifact.getArtifact().getFile()));
-        }
-        if (symbolicName == null) {
-            symbolicName = bundleUtils.calculateBundleSymbolicName(resolvedArtifact.getArtifact());
-        }
-        return symbolicName;
-    }
+	private String calculateName(String symbolicName) {
+		return calculateSingleton(symbolicName);
+	}
 
-    private String calculateVersion() throws IOException {
-        String version = null;
-        if (resolvedArtifact.isRoot()) {
-            Object versionValue = p2artifact.getInstructions().get(Analyzer.BUNDLE_VERSION);
-            version = versionValue != null ? versionValue.toString() : null;
-        }
-        if (version == null) {
-            version = bundleUtils.getBundleVersion(new Jar(resolvedArtifact.getArtifact().getFile()));
-        }
-        if (version == null) {
-            version = bundleUtils.calculateBundleVersion(resolvedArtifact.getArtifact());
-        }
-        return version;
-    }
+	private String calculateSingleton(String text) {
+		int poz;
+		if ((poz = text.indexOf(";")) > 0) {
+			return text.substring(0, poz);
+		}
+		return text;
+	}
 
-    private String calculateSourceVersion(String version) {
-        return version;
-    }
+	private String calculateSymbolicName() throws IOException {
+		String symbolicName = null;
+		if (resolvedArtifact.isRoot()) {
+			Object symbolicNameValue = p2artifact.getInstructions().get(Analyzer.BUNDLE_SYMBOLICNAME);
+			symbolicName = symbolicNameValue != null ? symbolicNameValue.toString() : null;
+		}
+		if (symbolicName == null) {
+			symbolicName = bundleUtils.getBundleSymbolicName(new Jar(resolvedArtifact.getArtifact().getFile()));
+		}
+		if (symbolicName == null) {
+			symbolicName = bundleUtils.calculateBundleSymbolicName(resolvedArtifact.getArtifact());
+		}
+		return symbolicName;
+	}
 
-    public static  String calculateSourceSymbolicName(String symbolicName) {
-        return symbolicName + ".source";
-    }
+	private String calculateVersion() throws IOException {
+		String version = null;
+		if (resolvedArtifact.isRoot()) {
+			Object versionValue = p2artifact.getInstructions().get(Analyzer.BUNDLE_VERSION);
+			version = versionValue != null ? versionValue.toString() : null;
+		}
+		if (version == null) {
+			version = bundleUtils.getBundleVersion(new Jar(resolvedArtifact.getArtifact().getFile()));
+		}
+		if (version == null) {
+			version = bundleUtils.calculateBundleVersion(resolvedArtifact.getArtifact());
+		}
+		return version;
+	}
 
-    public static String calculateSourceName(String name, String symbolicName) {
-        String sourceName = null;
-        if (name == null) {
-            sourceName = symbolicName + ".source";
-        } else {
-            sourceName = name.trim();
-            if (sourceName.matches(".*\\s+.*")) {
-                sourceName += " ";
-            } else {
-                sourceName += ".";
-            }
-            if (sourceName.matches(".*[A-Z].*")) {
-                sourceName += "Source";
-            } else {
-                sourceName += "source";
-            }
-        }
-        return sourceName;
-    }
+	private String calculateSourceVersion(String version) {
+		return version;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String calculateSourceSymbolicName(String symbolicName) {
 
-    public String getSymbolicName() {
-        return symbolicName;
-    }
+		return calculateSingleton(symbolicName) + ".source";
+	}
 
-    public String getVersion() {
-        return version;
-    }
+	public String calculateSourceName(String name, String symbolicName) {
+		String sourceName = null;
+		if (name == null) {
+			sourceName = calculateSingleton(symbolicName) + ".source";
+		} else {
+			sourceName = name.trim();
+			if (sourceName.matches(".*\\s+.*")) {
+				sourceName += " ";
+			} else {
+				sourceName += ".";
+			}
+			if (sourceName.matches(".*[A-Z].*")) {
+				sourceName += "Source";
+			} else {
+				sourceName += "source";
+			}
+		}
+		return sourceName;
+	}
 
-    public String getSourceName() {
-        return sourceName;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getSourceSymbolicName() {
-        return sourceSymbolicName;
-    }
+	public String getSymbolicName() {
+		return symbolicName;
+	}
 
-    public String getSourceVersion() {
-        return sourceVersion;
-    }
+	public String getVersion() {
+		return version;
+	}
+
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	public String getSourceSymbolicName() {
+		return sourceSymbolicName;
+	}
+
+	public String getSourceVersion() {
+		return sourceVersion;
+	}
 }
